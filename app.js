@@ -62,3 +62,50 @@ board.addEventListener('mousemove', (e) => {
     }
 
 })
+
+class Memo {
+    constructor(id, position, size, content) {
+        this.id = id
+        this.position = position
+        this.size = size
+        this.content = content
+        this.moving = false
+        this.resizing = false
+        this.createMemo()
+    }
+
+    createMemo() {
+        this.div = document.createElement('div')
+        this.div.classList.add('memo')
+
+        this.div.style.top = `${this.position.top}px`
+        this.div.style.left = `${this.position.left}px`
+        this.div.style.height = `${this.position.height}`
+        this.div.style.width = `${this.position.width}`
+
+        this.move = document.createElement('div')
+        this.move.classList.add('move')
+        this.move.addEventListener('mousedown', this.mouseDownMove.bind(this))
+        window.addEventListener('mouseup', this.mouseUp.bind(this))
+        this.div.appendChild(this.move)
+
+        this.close = document.createElement('close')
+        this.close.classList.add('close')
+        this.move.appendChild(this.close)
+        this.close.addEventListener('click', this.deleteMemo.bind(this))
+
+        this.text = document.createElement('textarea')
+        this.text.classList.add('text')
+        this.text.value = this.content
+        this.text.addEventListener('keyup', this.updateText.bind(this))
+        // this.text.addEventListener('blur', updateLocalStorage)
+        this.div.appendChild(this.text)
+
+        this.resize = document.createElement('div')
+        this.resize.classList.add('resize')
+        this.resize.addEventListener('mousedown', this.mouseDownResize.bind(this))
+        this.div.appendChild(this.resize)
+
+        board.appendChild(this.div)
+    }
+}
