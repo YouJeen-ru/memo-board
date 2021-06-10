@@ -1,6 +1,8 @@
 const board = document.querySelector('.board')
 const selectionDiv = document.querySelector('.selection')
 
+let memoList = []
+
 // Tracking variables
 
 let mouseClicked = false
@@ -45,6 +47,18 @@ board.addEventListener('mouseup', (e) => {
     let width = offsetXEnd - offsetXStart
     let height = offsetYEnd - offsetYStart
 
+
+    if (width >= 50 && height >= 50 && !movingMemo && !resizingMemo) {
+        //Create new memo
+        let memo = new Memo (
+            Date.now(),
+            {left: offsetXStart, top: offsetYStart},
+            {width, height},
+            '' // no content init
+        )
+        memoList.push(memo)
+    }
+
     selectionDiv.style.width = '0px'
     selectionDiv.style.height = '0px'
     board.style.cursor = 'default'
@@ -80,8 +94,8 @@ class Memo {
 
         this.div.style.top = `${this.position.top}px`
         this.div.style.left = `${this.position.left}px`
-        this.div.style.height = `${this.position.height}`
-        this.div.style.width = `${this.position.width}`
+        this.div.style.height = `${this.size.height}px`
+        this.div.style.width = `${this.size.width}px`
 
         this.move = document.createElement('div')
         this.move.classList.add('move')
@@ -108,4 +122,98 @@ class Memo {
 
         board.appendChild(this.div)
     }
+
+    mouseDownMove(e) {
+        movingMemo = true
+
+        this.moving = true
+
+        this.move.style.cursor = 'grabbing'
+        this.move.style.backgroundColor = '#bbf70655'
+
+        this.movingXDist = e.clientX - this.position.left
+        this.movingYDist = e.clientY - this.position.top
+    }
+
+    moveMemo(e){
+        // Move memo subtracting moving distances to account for mouse offset position within the move div.
+        this.div.style.top = `${e.clientY - this.movingYDist}px`;
+        this.div.style.left = `${e.clientX - this.movingXDist}px`;
+
+    }
+
+    mouseDownResize(e) {
+        this.resizing = true
+        resizingMemo = true
+    }
+
+    mouseUp() {
+        const currentPosition = {left: this.position.left, top: this.position.top};
+        Object.freeze(currentPosition);
+
+        const currentSize = {width: this.size.width, height: this.size.height}
+        Object.freeze(currentSize);
+
+
+        movingMemo = false
+        resizingMemo = false
+
+        this.moving = false
+        this.resizing = false
+
+        this.move.style.cursor = 'grab'
+
+        this.move.style.backgroundColor = 'transparent'
+        // Reset the div position once the element has been moved
+        this.position.top = this.div.offsetTop
+        this.position.left = this.div.offsetLeft
+
+        // Adjust memo positions if they are dragged out of bounds
+
+        if (this.position.top < 0) {
+            this.position.top = 0
+            this.div.style.top = '0px'
+        }
+
+        let boardHeight = board.getBoundingClientRect().bottom
+
+        if (this.position.top + this.size.height > boardHeight) {
+            this.position.top = boardHeight - (this.size.height + 10)
+            this.div.style.top = `${this.position.top}px`
+        }
+
+        if (this.position.left < 0) {
+            this.position.left = 0
+            this.div.style.left = '0px'
+        }
+
+        let boardRight = board.getBoundingClientRect().right;
+
+        if (this.position.left + this.size.width > boardRight) {
+            this.position.left = boardRight - (this.size.width + 10)
+            this.div.style.left= `${this.position.left}px`
+        }
+
+    }
+
+    updateText() {
+        this.content = this.text.value
+    }
+
+    deleteMemo() {
+        this.div.remove()
+    }
 }
+
+// Global event listeners for memo size and positioning.
+window.addEventListener('mousemove', (e) => {
+    for(let i = 0; i < memoList.length; i++){
+        if(memoList[i].moving){
+            memoList[i].moveMemo(e);
+        }
+
+        // if(memoList[i].resizing){
+        //     memoList[i].resizeMemo(e)
+        // }
+    }
+})
