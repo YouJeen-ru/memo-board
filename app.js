@@ -147,6 +147,23 @@ class Memo {
         resizingMemo = true
     }
 
+    resizeMemo(e) {
+        let height = e.clientY - this.position.top
+        let width = e.clientX - this.position.left
+
+        // limit the size ti a minimum 50px * 50px
+
+        if (width >= 50 && height >=50) {
+            // Set sizes for future re-renders
+            this.size.height = height
+            this.size.width = width
+
+            // Change the style to match dimensions
+            this.div.style.height = `${height}px`
+            this.div.style.width = `${width}px`
+        }
+    }
+
     mouseUp() {
         const currentPosition = {left: this.position.left, top: this.position.top};
         Object.freeze(currentPosition);
@@ -212,8 +229,8 @@ window.addEventListener('mousemove', (e) => {
             memoList[i].moveMemo(e);
         }
 
-        // if(memoList[i].resizing){
-        //     memoList[i].resizeMemo(e)
-        // }
+        if(memoList[i].resizing){
+            memoList[i].resizeMemo(e)
+        }
     }
 })
