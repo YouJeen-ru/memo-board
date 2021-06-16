@@ -264,5 +264,17 @@ window.addEventListener('mousemove', (e) => {
         if(memoList[i].resizing){
             memoList[i].resizeMemo(e)
         }
+
+        // Blocked border move board
+        if (e.offsetX < 0 || e.offsetY < 0 || e.offsetY > board.getBoundingClientRect().bottom
+            || e.offsetX > board.getBoundingClientRect().right) {
+            mouseClicked = false
+        }
+    }
+})
+
+window.addEventListener('mouseup', () => {
+    for(let i = 0; i< memoList.length; i++){
+        memoList[i].mouseUp();
     }
 })
