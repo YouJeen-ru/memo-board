@@ -1,6 +1,8 @@
 const board = document.querySelector('.board')
 const selectionDiv = document.querySelector('.selection')
 
+let localStorageMemos = JSON.parse(localStorage.getItem('memos')) || []
+
 let memoList = []
 
 // Tracking variables
@@ -57,6 +59,7 @@ board.addEventListener('mouseup', (e) => {
             '' // no content init
         )
         memoList.push(memo)
+        updateLocalStorage()
     }
 
     selectionDiv.style.width = '0px'
@@ -112,7 +115,7 @@ class Memo {
         this.text.classList.add('text')
         this.text.value = this.content
         this.text.addEventListener('keyup', this.updateText.bind(this))
-        // this.text.addEventListener('blur', updateLocalStorage)
+        this.text.addEventListener('blur', updateLocalStorage)
         this.div.appendChild(this.text)
 
         this.resize = document.createElement('div')
@@ -162,6 +165,7 @@ class Memo {
             this.div.style.height = `${height}px`
             this.div.style.width = `${width}px`
         }
+        updateLocalStorage()
     }
 
     mouseUp() {
@@ -211,6 +215,11 @@ class Memo {
             this.div.style.left= `${this.position.left}px`
         }
 
+        if (JSON.stringify(this.position) !== JSON.stringify(currentPosition)
+        || JSON.stringify(this.size) !== JSON.stringify(currentSize)) {
+            updateLocalStorage()
+        }
+
     }
 
     updateText() {
@@ -218,7 +227,30 @@ class Memo {
     }
 
     deleteMemo() {
+        memoList = memoList.filter(memo => {
+            return memo.id !== this.id
+        })
+        updateLocalStorage()
         this.div.remove()
+    }
+}
+
+// Initialize stored memos on page load
+
+localStorageMemos.forEach(memo => {
+    let storedMemo = new Memo(
+        memo.id,
+        {left: memo.position.left, top: memo.position.top},
+        {width: memo.size.width, height: memo.size.height},
+        memo.content
+    )
+    memoList.push(storedMemo)
+})
+
+function updateLocalStorage(){
+    if(localStorage.getItem('memos') !== JSON.stringify(memoList)){
+        console.log('Local storage updated')
+        localStorage.setItem('memos', JSON.stringify(memoList));
     }
 }
 
